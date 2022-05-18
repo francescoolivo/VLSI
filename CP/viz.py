@@ -5,7 +5,7 @@ import sys
 
 def plot_solution(w, h, n, xs, ys, widths, heights, instance=""):
     image = np.ones((h, w, 3))
-    np.random.seed(666)
+    np.random.seed(42)
 
     for i in range(n):
         x, y = xs[i], ys[i]
