@@ -34,7 +34,7 @@ def plot_solution(w, h, n, xs, ys, widths, heights, instance=""):
     fig.update_xaxes(range=[0, w],
                      autorange=False,
                      scaleratio=1,
-                     # dtick=1,
+                     dtick=1,
                      rangebreaks=[dict(bounds=[0, w])]
                      # type="category",
                      )
@@ -42,12 +42,12 @@ def plot_solution(w, h, n, xs, ys, widths, heights, instance=""):
                      # scaleanchor="x",
                      scaleratio=1,
                      autorange=False,
-                     # dtick=1,
+                     dtick=1,
                      rangebreaks=[dict(bounds=[0, h])]
                      # type="category"
                      )
-    #fig.show()
-    fig.write_image("fig1.png", width=600, height=600)
+    fig.show()
+    #fig.write_image("fig1.png", width=600, height=600)
 
 
 if __name__ == "__main__":
