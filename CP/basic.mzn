@@ -3,17 +3,29 @@ include "globals.mzn";
 % input
 int: w;
 int: n;
-array[1..n, 1..2] of int: sizes;       % [ (weidhts_0, height_0), ..., (weidhts_n, height_n) ] TO CHANGE IN CIRCUITS
+array[1..n, 1..2] of int: sizes;       
+% [ (weidhts_0, height_0), ..., (weidhts_n, height_n) ] TO CHANGE IN CIRCUITS
+
+% decreasing area order
+array[int] of int: order = arg_sort([-sizes[i, 1]*sizes[i, 2] | i in 1..n]); 
+
+% decreasing height order
+% array[int] of int: order = arg_sort([-sizes[i, 2] | i in 1..n]); 
+
+% decreasing perimeter (half) order
+% array[int] of int: order = arg_sort([-sizes[i, 1]+sizes[i, 2] | i in 1..n]); 
+
+% decreasing height/width ratio order
+% array[int] of int: order = arg_sort([-sizes[i, 2]/sizes[i, 1] | i in 1..n]); 
 
 % we extract widths e heights
-array[1..n] of int: widths = [sizes[i, 1] | i in 1..n]; 
-array[1..n] of int: heights = [sizes[i, 2] | i in 1..n]; 
+array[1..n] of int: widths = [sizes[i, 1] | i in order]; 
+array[1..n] of int: heights = [sizes[i, 2] | i in order];
 
 
 % lower and upper bounder for h %int: min_h = max(heights);
 int: l_min = max(heights ++  [ceil(sum([heights[i]*widths[i] | i in 1..n])/w)]);
 
-%mia stima ma non serve ad un cazzo, bisogna ragionarci un po' (male che vada max(heights))
 int: l_max = ceil( l_min + sum(heights) / 2);
 
 % what we are looking for
@@ -36,14 +48,15 @@ constraint cumulative(y, heights, widths, w);
 %int: larger = arg_max([sizes[i, 1]*sizes[i,2] | i in 1..n]);
 %constraint x[larger] == 0 /\ y[larger] == 0;
 
-%MANCA CONSTRAINT SULLA SIMMETRIA VERTICALE ED ORIZZONTALE, A MENO CHE CUMULATIVE NON FACCIA QUALCOSA IN PROPOSITO...
 
 %symmetry breaking for circuits with same dimensions
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (widths[i]==widths[j] /\ heights[i]==heights[j]) then lex_less([x[i], y[i]], [x[j], y[j]]) endif);
 
-solve minimize l; % notare che minimize h e maximize -h danno risultati intermedi diversi ????
-
-% SEQ_SEARCH aumenta SENSIBILMENTE la velocità di ricerca, da lavorarci
+solve :: seq_search([
+          int_search(y, smallest, indomain_min) :: int_search(x, first_fail, indomain_min),
+          int_search([l], input_order, indomain_min),
+])
+maximize -l;
 
 output ["\(w)\n", 
         "\(l)\n",
@@ -53,6 +66,3 @@ output ["\(w)\n",
         "\(widths)\n",
         "\(heights)\n", 
         ];
-        
-        
-

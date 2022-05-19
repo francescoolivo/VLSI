@@ -1,5 +1,5 @@
 import random
-
+import os
 import plotly.graph_objects as go
 import numpy as np
 import matplotlib
@@ -11,7 +11,7 @@ from itertools import cycle
 palette = cycle(px.colors.qualitative.Plotly)
 
 
-def plot_solution(w, h, n, xs, ys, widths, heights, instance=""):
+def plot_solution(w, h, n, xs, ys, widths, heights, instance, filename):
     r = random.Random(42)
 
     fig = go.Figure()
@@ -46,11 +46,16 @@ def plot_solution(w, h, n, xs, ys, widths, heights, instance=""):
                      rangebreaks=[dict(bounds=[0, h])]
                      # type="category"
                      )
-    fig.show()
-    #fig.write_image("fig1.png", width=600, height=600)
+
+    fig.update_layout(title = name)
+    #fig.show()
+    fig.write_image(filename, width=600, height=600)
 
 
 if __name__ == "__main__":
+
+    name = sys.argv[1].split('.')[0]
+    filename = os.path.join(sys.argv[2], f'{name}.png')
 
     # read compilation stats (useless)
     for i in range(7):
@@ -84,8 +89,19 @@ if __name__ == "__main__":
     failures = int(sys.stdin.readline().strip().split('=')[-1])
     restarts = int(sys.stdin.readline().strip().split('=')[-1])
     peakDepth = int(sys.stdin.readline().strip().split('=')[-1])
+
+    csv_name = sys.argv[3]
+
+    if not os.path.exists(csv_name):
+        f = open(csv_name, mode = "w")
+        f.write("init_time,solve_time,solutions,variables,propagators,propagations,nodes,failures,restarts,peak_depth\n")
+    else:
+        f = open(csv_name, "a")
+
+    f.write(f'{initTime},{solveTime},{solutions},{variables},{propagators},{propagations},{nodes},{failures},{restarts},{peakDepth}\n')
+    f.close()
     
     print("% Minizinc statics:")
     print("%%%SolveTime={}\n%%%Propagations={}\n%%%Failures={}".format(solveTime, propagations, failures))
 
-    plot_solution(w, h, n, x, y, widths, heights, "Solution")
+    plot_solution(w, h, n, x, y, widths, heights, name, filename)

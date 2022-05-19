@@ -1,13 +1,19 @@
 import os
+import re
 
-dir = "/home/francescoolivo/Documents/Unibo/Master/CDMO/instances"
+dir = "/home/francescoolivo/Documents/Unibo/Master/CDMO/VLSI/instances"
 
 os.chdir(dir)
 
 files = os.listdir(dir)
 
 for file in files:
-    file_dest_name = file.replace(".txt", ".dzn")
+    if ".dzn" in file:
+        continue
+    number_re = re.compile(r"ins-(\d+).txt")
+    number = int(number_re.match(file).group(1))
+    # file_dest_name = file.replace(".txt", ".dzn")
+    file_dest_name = f"ins-{number:02d}.dzn"
 
     f = open(file, "r")
     w = f.readline().strip()
