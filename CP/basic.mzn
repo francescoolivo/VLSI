@@ -6,7 +6,7 @@ int: n;
 array[1..n, 1..2] of int: circuits;
 
 % decreasing area order
-array[int] of int: order = arg_sort([-circuits[i, 1]*sizes[i, 2] | i in 1..n]); 
+array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]); 
 
 % decreasing height order
 % array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
