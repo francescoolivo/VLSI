@@ -26,7 +26,6 @@ array[1..n] of int: heights = [sizes[i, 2] | i in order];
 % lower and upper bounder for h %int: min_h = max(heights);
 int: l_min = max(heights ++  [ceil(sum([heights[i]*widths[i] | i in 1..n])/w)]);
 
-%mia stima ma non serve ad un cazzo, bisogna ragionarci un po' (male che vada max(heights))
 int: l_max = ceil( l_min + sum(heights) / 2);
 
 % what we are looking for
@@ -49,7 +48,6 @@ constraint cumulative(y, heights, widths, w);
 %int: larger = arg_max([sizes[i, 1]*sizes[i,2] | i in 1..n]);
 %constraint x[larger] == 0 /\ y[larger] == 0;
 
-%MANCA CONSTRAINT SULLA SIMMETRIA VERTICALE ED ORIZZONTALE, A MENO CHE CUMULATIVE NON FACCIA QUALCOSA IN PROPOSITO...
 
 %symmetry breaking for circuits with same dimensions
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (widths[i]==widths[j] /\ heights[i]==heights[j]) then lex_less([x[i], y[i]], [x[j], y[j]]) endif);
@@ -68,6 +66,3 @@ output ["\(w)\n",
         "\(widths)\n",
         "\(heights)\n", 
         ];
-        
-        
-

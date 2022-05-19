@@ -1,35 +1,39 @@
 import os
 import re
 
-dir = "/home/francescoolivo/Documents/Unibo/Master/CDMO/VLSI/instances"
+if __name__ == "__main__":
 
-os.chdir(dir)
+    directory = sys.argv[1]
 
-files = os.listdir(dir)
+    os.chdir(directory)
 
-for file in files:
-    if ".dzn" in file:
-        continue
-    number_re = re.compile(r"ins-(\d+).txt")
-    number = int(number_re.match(file).group(1))
-    # file_dest_name = file.replace(".txt", ".dzn")
-    file_dest_name = f"ins-{number:02d}.dzn"
+    files = os.listdir(directory)
 
-    f = open(file, "r")
-    w = f.readline().strip()
-    n = f.readline().strip()
+    for file in files:
+        if ".dzn" in file:
+            continue
+        number_re = re.compile(r"ins-(\d+).txt")
+        number = int(number_re.match(file).group(1))
+        # file_dest_name = file.replace(".txt", ".dzn")
+        file_dest_name = f"ins-{number:02d}.dzn"
 
-    sizes = []
-    for line in f.readlines():
-        x1 = line.split()[0]
-        x2 = line.split()[1]
+        f = open(file, "r")
+        w = f.readline().strip()
+        n = f.readline().strip()
 
-        sizes.append((x1, x2))
+        sizes = []
+        for line in f.readlines():
+            x1 = line.split()[0]
+            x2 = line.split()[1]
 
-    new = open(file_dest_name, "w")
-    new.write(f"w={w};\nn={n};\nsizes=[|\n")
-    for size in sizes:
-        new.write(f"{size[0]}, {size[1]}|\n")
-    new.write("|];")
-    new.close()
+            sizes.append((x1, x2))
+            
+        f.close()
+
+        new = open(file_dest_name, "w")
+        new.write(f"w={w};\nn={n};\ncircuits=[|\n")
+        for size in sizes:
+            new.write(f"{size[0]}, {size[1]}|\n")
+        new.write("|];")
+        new.close()
 
