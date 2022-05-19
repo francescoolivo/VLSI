@@ -25,7 +25,12 @@ def plot_solution(w, h, n, xs, ys, widths, heights, instance=""):
 
 
 if __name__ == "__main__":
+
+    # read compilation stats (useless)
+    for i in range(7):
+        sys.stdin.readline()
     
+    # read solution
     w = int(sys.stdin.readline())
     h = int(sys.stdin.readline())
     n = int(sys.stdin.readline())
@@ -37,5 +42,24 @@ if __name__ == "__main__":
     widths = [int(s) for s in w_str.split(',')]
     h_str = sys.stdin.readline().strip().replace('[', '').replace(']', '')
     heights = [int(s) for s in h_str.split(',')]
+
+    # read 2 separator-lines
+    for i in range(2):
+        sys.stdin.readline()
+
+    # read solving stats
+    initTime = float(sys.stdin.readline().strip().split('=')[-1])
+    solveTime = float(sys.stdin.readline().strip().split('=')[-1])
+    solutions = int(sys.stdin.readline().strip().split('=')[-1])
+    variables = int(sys.stdin.readline().strip().split('=')[-1])
+    propagators = int(sys.stdin.readline().strip().split('=')[-1])
+    propagations = int(sys.stdin.readline().strip().split('=')[-1])
+    nodes = int(sys.stdin.readline().strip().split('=')[-1])
+    failures = int(sys.stdin.readline().strip().split('=')[-1])
+    restarts = int(sys.stdin.readline().strip().split('=')[-1])
+    peakDepth = int(sys.stdin.readline().strip().split('=')[-1])
+    
+    print("% Minizinc statics:")
+    print("%%%SolveTime={}\n%%%Propagations={}\n%%%Failures={}".format(solveTime, propagations, failures))
 
     plot_solution(w, h, n, x, y, widths, heights, "Solution")
