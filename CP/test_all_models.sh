@@ -1,5 +1,7 @@
 # USAGE test_all_models.sh models_dir run_script python_viz_script instances_dir images_dir csv_dir
 
+git pull
+
 for input in $(ls $1/*.mzn);
 do
 filename=$(basename $input .mzn)
@@ -11,3 +13,7 @@ mkdir -p $images_dir
 # USAGE run.sh solver.mzn python_viz_script instances_dir images_dir csv_name
 eval $2 $input $3 $4 $images_dir $csv_name
 done
+
+git add *
+git commit -a -m "completed tests"
+git push
