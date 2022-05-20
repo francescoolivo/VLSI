@@ -45,7 +45,7 @@ constraint cumulative(y, heights, widths, w);
 % symmetry breaking constraint
 % we impose that the circuits with the larger area starts from (0,0) RALLENTA DI MOLTO
 %int: larger = arg_max([circuits[i, 1]*circuits[i,2] | i in 1..n]);
-%constraint x[larger] == 0 /\ y[larger] == 0;
+constraint x[1] == 0 /\ y[1] == 0;
 
 
 %symmetry breaking for circuits with same dimensions
