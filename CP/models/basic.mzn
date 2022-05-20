@@ -26,13 +26,11 @@ array[1..n] of int: heights = [circuits[i, 2] | i in order];
 int: l_min = max(heights ++  [ceil(sum([heights[i]*widths[i] | i in 1..n])/w)]);
 
 int: l_max = ceil( l_min + sum(heights) / 2);
-
+%int: l_max = sum(heights);
 % what we are looking for
 var l_min..l_max: l; % length of the plate 
 array [1..n] of var 0..w-1: x;
 array [1..n] of var 0..l_max: y;
-
-%constraint if sum(widths) <= w then h = max(heights) endif; % prova dell'if
 
 % constraints
 constraint diffn(x, y, widths, heights); % not-overlapping
@@ -43,8 +41,7 @@ constraint cumulative(x, widths, heights, l);
 constraint cumulative(y, heights, widths, w); 
 
 % symmetry breaking constraint
-% we impose that the circuits with the larger area starts from (0,0) RALLENTA DI MOLTO
-%int: larger = arg_max([circuits[i, 1]*circuits[i,2] | i in 1..n]);
+% we impose that the circuits with the larger area starts from (0,0)
 constraint x[1] == 0 /\ y[1] == 0;
 
 
@@ -52,10 +49,10 @@ constraint x[1] == 0 /\ y[1] == 0;
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (widths[i]==widths[j] /\ heights[i]==heights[j]) then lex_less([x[i], y[i]], [x[j], y[j]]) endif);
 
 solve :: seq_search([
-          int_search(y, smallest, indomain_min) :: int_search(x, first_fail, indomain_min),
           int_search([l], input_order, indomain_min),
-])
-maximize -l;
+          int_search(x, first_fail, indomain_min) :: int_search(y, smallest, indomain_min),
+])         
+minimize l;
 
 output ["\(w)\n", 
         "\(l)\n",
