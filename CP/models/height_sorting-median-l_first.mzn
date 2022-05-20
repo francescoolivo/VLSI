@@ -9,7 +9,7 @@ array[1..n, 1..2] of int: circuits;
 %array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]); 
 
 % decreasing height order
-% array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
+array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
 
 % decreasing perimeter (half) order
 % array[int] of int: order = arg_sort([-circuits[i, 1]+circuits[i, 2] | i in 1..n]); 
@@ -18,8 +18,8 @@ array[1..n, 1..2] of int: circuits;
 % array[int] of int: order = arg_sort([-circuits[i, 2]/circuits[i, 1] | i in 1..n]); 
 
 % we extract widths e heights
-array[1..n] of int: widths = [circuits[i, 1] | i in 1..n]; 
-array[1..n] of int: heights = [circuits[i, 2] | i in 1..n];
+array[1..n] of int: widths = [circuits[i, 1] | i in order]; 
+array[1..n] of int: heights = [circuits[i, 2] | i in order];
 
 
 % lower and upper bounder for h %int: min_h = max(heights);
@@ -49,24 +49,13 @@ constraint x[1] == 0 /\ y[1] == 0;
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (widths[i]==widths[j] /\ heights[i]==heights[j]) then lex_less([x[i], y[i]], [x[j], y[j]]) endif);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%solve :: seq_search([ % min_domain_l (LFIRST)
-%         int_search([l], input_order, indomain_min), int_search(x, input_order, indomain_min) :: int_search(y, input_order, indomain_min)])
-%minimize l;
-
-%solve :: seq_search([ % median_domain_l (LFIRST)
-%          int_search([l], input_order, indomain_median), int_search(x, input_order, indomain_min) :: int_search(y, input_order, indomain_min)])
-%minimize l;
-
-%solve :: seq_search([ % min_domain_l (PLATEFIRST)
-%          int_search(x, input_order, indomain_min) :: int_search(y, input_order, indomain_min), int_search([l], input_order, indomain_min)])
-%minimize l;
 
 
-%solve :: seq_search([ % median_domain_l (PLATEFIRST)
-%          int_search(x, input_order, indomain_min) :: int_search(y, input_order, indomain_min), int_search([l], input_order, indomain_median)])
-%minimize l;
+solve :: seq_search([ % median_domain_l (LFIRST)
+          int_search([l], input_order, indomain_median), int_search(x, input_order, indomain_min) :: int_search(y, input_order, indomain_min)])
+minimize l;
 
-solve minimize l;
+
 
 output ["\(w)\n", 
         "\(l)\n",
