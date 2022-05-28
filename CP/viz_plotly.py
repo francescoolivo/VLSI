@@ -11,7 +11,7 @@ from itertools import cycle
 palette = cycle(px.colors.qualitative.Plotly)
 
 
-def plot_solution(w, h, n, xs, ys, widths, heights, instance, filename):
+def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
     r = random.Random(42)
 
     fig = go.Figure()
@@ -47,23 +47,23 @@ def plot_solution(w, h, n, xs, ys, widths, heights, instance, filename):
                      # type="category"
                      )
 
-    fig.update_layout(title = name.upper(), title_x=0.5)
-    #fig.show()
+    fig.update_layout(title=name.upper(), title_x=0.5)
+    # fig.show()
     fig.write_image(filename, width=1200, height=1200)
 
 
 if __name__ == "__main__":
 
-    name = sys.argv[1].split('/')[-1].split('.')[0]
+    name = sys.argv[1].split(os.sep)[-1].split('.')[0]
     filename = os.path.join(sys.argv[2], f'{name}.png')
 
-    print("="*20)
+    print("=" * 20)
     print(f"instance {name} started")
 
     # read compilation stats (useless)
     for i in range(7):
         sys.stdin.readline()
-    
+
     optimality_check = None
     # read solution
     try:
@@ -120,17 +120,18 @@ if __name__ == "__main__":
     csv_name = sys.argv[3]
 
     if not os.path.exists(csv_name):
-        f = open(csv_name, mode = "w")
-        f.write("instance,init_time,solve_time,solutions,variables,propagators,propagations,nodes,failures,restarts,peak_depth,valid,optimal\n")
+        f = open(csv_name, mode="w")
+        f.write(
+            "instance,init_time,solve_time,solutions,variables,propagators,propagations,nodes,failures,restarts,peak_depth,valid,optimal\n")
     else:
         f = open(csv_name, "a")
 
-    f.write(f'{name},{initTime},{solveTime},{solutions},{variables},{propagators},{propagations},{nodes},{failures},{restarts},{peakDepth},{1 if valid else 0},{1 if optimal else 0}\n')
+    f.write(
+        f'{name},{initTime},{solveTime},{solutions},{variables},{propagators},{propagations},{nodes},{failures},{restarts},{peakDepth},{1 if valid else 0},{1 if optimal else 0}\n')
     f.close()
-    
+
     # print("% Minizinc statics:")
     # print("%%%SolveTime={}\n%%%Propagations={}\n%%%Failures={}".format(solveTime, propagations, failures))
 
-    
     print(f"instance {name} concluded")
-    print("="*20)
+    print("=" * 20)

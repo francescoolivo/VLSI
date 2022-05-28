@@ -49,6 +49,8 @@ def solve_instance(in_file, out_dir):
     # maximum height to minimize
     length = md.z3_max([p_y[i] + y[i] for i in range(n)])
 
+    # TODO: try with y_r
+
     # domain bounds
     domain_x = [p_x[i] >= 0 for i in range(n)]
     domain_y = [p_y[i] >= 0 for i in range(n)]
@@ -85,6 +87,7 @@ def solve_instance(in_file, out_dir):
 
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
     symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
+    # TODO: this should be done after rotation
 
     # circuits must be pushed on the left
     left = [sum([If(p_x[i] <= w // 2, area[i], 0) for i in range(n)])

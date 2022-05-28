@@ -1,48 +1,124 @@
 import argparse
+import csv
+import os
+import random
 from glob import glob
+from itertools import cycle
+from os.path import exists
 import model_final
-import model_rotation
+import rotation as model_rotation
 from z3 import *
+import utils
+import plotly.graph_objects as go
+import random
+import plotly.express as px
 
-default_in_dir = "..\..\data\instances_txt" if os.name == 'nt' else "../../data/instances_txt"
-default_out_dir = "..\out" if os.name == 'nt' else "../out"
+palette = cycle(px.colors.qualitative.Plotly)
+
+
+def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
+    r = random.Random(42)
+
+    fig = go.Figure()
+
+    for i in range(n):
+        x, y = xs[i], ys[i]
+        width, height = widths[i], heights[i]
+        fig.add_shape(type="rect",
+                      x0=x, y0=y, x1=x + width, y1=y + height,
+                      line=dict(
+                          color="Black",
+                          width=2,
+                      ),
+                      fillcolor=next(palette), )
+
+    fig.update_shapes(dict(xref='x', yref='y'))
+
+    fig.update_xaxes(range=[0, w],
+                     autorange=False,
+                     scaleratio=1,
+                     dtick=1,
+                     rangebreaks=[dict(bounds=[0, w])]
+                     # type="category",
+                     )
+    fig.update_yaxes(range=[0, h],
+                     # scaleanchor="x",
+                     scaleratio=1,
+                     autorange=False,
+                     dtick=1,
+                     rangebreaks=[dict(bounds=[0, h])]
+                     # type="category"
+                     )
+
+    fig.update_layout(title=name.upper(), title_x=0.5)
+    # fig.show()
+    fig.write_image(filename, width=1200, height=1200)
 
 
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-i", "--in_dir", help="Path to the directory containing the initial instances",
-                        required=False, type=str)
-    parser.add_argument("-o", "--out_dir",
+    parser.add_argument("-i", "--input_dir", help="Path to the directory containing the initial instances",
+                        required=False, type=str, default="../instances/txt")
+    parser.add_argument("-o", "--output_dir",
                         help="Path to the directory that will contain the output solutions in .txt format",
-                        required=False, type=str)
+                        required=False, type=str, default="out")
     parser.add_argument("-r", "--rotation", help="Flag to decide whether it is possible use rotated circuits",
-                        required=False, action='store_true')
+                        required=False, action='store_true', default=False)
     args = parser.parse_args()
 
     # model to execute
     if args.rotation:
         model = "rotation"
     else:
-        model = "final"
+        model = "basic"
 
-    in_dir = args.in_dir if args.in_dir is not None else default_in_dir
-    out_dir = args.out_dir if args.out_dir is not None else os.path.join(default_out_dir, model)
+    input_dir = args.input_dir
+    output_dir = os.path.join(args.output_dir, model)
+    if not exists(output_dir):
+        os.makedirs(output_dir)
 
-    for i in range(len(glob(os.path.join(in_dir, '*.txt')))):
-        in_file = os.path.join(in_dir, f'ins-{i + 1}.txt')
+    plots_dir = os.path.join(output_dir, "plots")
+    if not exists(plots_dir):
+        os.makedirs(plots_dir)
 
-        print(f"\n\nSOLVING INSTANCE {i + 1}:")
+    solutions_file = os.path.join(output_dir, 'solutions.csv')
 
-        if args.rotation:
-            model_rotation.solve_instance(in_file, out_dir)
-        else:
-            model_final.solve_instance(in_file, out_dir)
+    with open(solutions_file, 'w') as csv_file:
+        csv_file.write("name,time\n")
+
+    for file in sorted(os.listdir(input_dir)):
+        if file.endswith(".txt"):
+            name = file.split(os.sep)[-1].split('.')[0]
+
+            instance = utils.read_file(os.path.join(input_dir, file))
+            print(f"Solving instance {name}")
+            if args.rotation:
+                solution = model_rotation.solve(instance)
+            else:
+                solution = model_final.solve(instance)
+
+            if solution['found']:
+                print(solution)
+                plot_name = os.path.join(plots_dir, name + '.png')
+                print(plot_name)
+                plot_solution(solution['w'],
+                              solution['length'],
+                              solution['n'],
+                              solution['p_x'],
+                              solution['p_y'],
+                              solution['x'],
+                              solution['y'],
+                              name,
+                              plot_name)
+                utils.write_file(os.path.join(output_dir, name + ".txt"), solution)
+                print(f"Solution found in time {solution['time']}")
+            else:
+                print("Solution not found in time")
+
+            with open(solutions_file, 'a') as csv_file:
+                csv_file.write(f"{name},{solution['time']:.5f}\n")
 
 
 if __name__ == '__main__':
     main()
-
-
-
-
