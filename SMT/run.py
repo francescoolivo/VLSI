@@ -99,9 +99,7 @@ def main():
                 solution = model_final.solve(instance)
 
             if solution['found']:
-                print(solution)
                 plot_name = os.path.join(plots_dir, name + '.png')
-                print(plot_name)
                 plot_solution(solution['w'],
                               solution['length'],
                               solution['n'],
