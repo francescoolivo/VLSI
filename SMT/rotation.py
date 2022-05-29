@@ -91,6 +91,7 @@ def solve(instance, timeout=300000):
     # solving the problem
     start_time = time.time()
 
+
     if opt.check() == sat:
         model = opt.model()
         elapsed_time = time.time() - start_time
@@ -98,12 +99,14 @@ def solve(instance, timeout=300000):
         for i in range(n):
             p_x_sol.append(model.evaluate(p_x[i]).as_long())
             p_y_sol.append(model.evaluate(p_y[i]).as_long())
+            x_sol.append(model.evaluate(x_r[i]).as_long())
+            y_sol.append(model.evaluate(y_r[i]).as_long())
+
 
         length_sol = model.evaluate(length).as_long()
 
         # storing result
-        # TODO: add rotated lengths
-        solution = {'w': w, 'n': n, 'length': length_sol, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
+        solution = {'w': w, 'n': n, 'length': length_sol, 'x': x_sol, 'y': y_sol, 'p_x': p_x_sol, 'p_y': p_y_sol,
                     'time': elapsed_time, 'found': True}
 
     else:
