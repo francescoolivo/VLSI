@@ -2,7 +2,6 @@ import argparse
 from itertools import cycle
 from os.path import exists
 import model_final
-import rotation as model_rotation
 from z3 import *
 import utils
 import plotly.graph_objects as go
@@ -10,7 +9,6 @@ import random
 import plotly.express as px
 
 palette = cycle(px.colors.qualitative.Plotly)
-
 
 def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
     r = random.Random(42)
@@ -64,10 +62,11 @@ def main():
     args = parser.parse_args()
 
     # model to execute
-    if args.rotation:
-        model = "rotation"
-    else:
-        model = "basic"
+    # if args.rotation:
+    #     model = "rotation"
+    # else:
+    #     model = "basic"
+    model = "basic"
 
     input_dir = args.input_dir
     output_dir = os.path.join(args.output_dir, model)
@@ -89,10 +88,11 @@ def main():
 
             instance = utils.read_file(os.path.join(input_dir, file))
             print(f"Solving instance {name}")
-            if args.rotation:
-                solution = model_rotation.solve(instance)
-            else:
-                solution = model_final.solve(instance)
+            # if args.rotation:
+            #     solution = model_rotation.solve(instance)
+            # else:
+            #     solution = model_final.solve(instance)
+            solution = model_final.solve(instance)
 
             if solution['found']:
                 plot_name = os.path.join(plots_dir, name + '.png')
