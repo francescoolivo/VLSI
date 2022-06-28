@@ -28,7 +28,8 @@ def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
                           color="Black",
                           width=2,
                       ),
-                      fillcolor=next(palette), )
+                      fillcolor=next(palette),
+                      opacity=0.5)
 
     fig.update_shapes(dict(xref='x', yref='y'))
 
@@ -52,6 +53,27 @@ def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
     fig.show()
     # fig.write_image(filename, width=1200, height=1200)
 
+def get_max_length(x, y, w):
+    # int: l_max = ceil( l_min + sum(heights) / 2);
+
+    l_min = get_min_length(x, y, w)
+    heights_sum = 0
+    for i in y:
+        heights_sum += i
+
+    l_max = math.ceil(l_min + heights_sum / 2)
+    return l_max
+
+
+def get_min_length(x, y , w):
+    #int: l_min = max(heights + +  [ceil(sum([heights[i] * widths[i] | i in 1..n]) / w)]);
+    area_sum = 0
+    for i in range(len(x)):
+        area_sum += x[i] * y[i]
+
+    values = [math.ceil(area_sum / w)] + y
+    return max(values)
+
 def solve(instance, timeout=300000):
     w = instance['w']
     n = instance['n']
@@ -60,17 +82,22 @@ def solve(instance, timeout=300000):
 
     problem = LpProblem("VLSI", LpMinimize)
 
-    h_goal = LpVariable("height", max(y), sum(y), cat=LpInteger)
+    l_min = get_min_length(x, y, w)
+    l_max = get_max_length(x, y, w)
 
-    p_x = [LpVariable(f"x{i + 1}", 0, max(x), cat=LpInteger) for i in range(n)]
-    p_y = [LpVariable(f"y{i + 1}", 0, max(y), cat=LpInteger) for i in range(n)]
+    print(l_min, l_max)
 
-    x_pair = [[LpVariable(f"x{i + 1}{j + 1}", cat=LpBinary) for j in range(n)] for i in range(n)]
-    y_pair = [[LpVariable(f"y{i + 1}{j + 1}", cat=LpBinary) for j in range(n)] for i in range(n)]
+    h_goal = LpVariable("height", lowBound=l_min, upBound=l_max, cat=LpInteger)
 
-    delta = [[[LpVariable(f"d_{i + 1}{j + 1}{k + 1}", 0, 1, cat=LpInteger) for k in range(4)] for j in range(n)] for i in range(n)]
-    m = [w, w, sum(y), sum(y)]
+    p_x = [LpVariable(f"x{i + 1}", 0, w, cat=LpInteger) for i in range(n)]
+    p_y = [LpVariable(f"y{i + 1}", 0, l_max, cat=LpInteger) for i in range(n)]
 
+    d1 = [[LpVariable(f"d1{i+1}{j+1}", cat=LpBinary) for j in range(n)] for i in range(n)]
+    d2 = [[LpVariable(f"d2{i+1}{j+1}", cat=LpBinary) for j in range(n)] for i in range(n)]
+    d3 = [[LpVariable(f"d3{i+1}{j+1}", cat=LpBinary) for j in range(n)] for i in range(n)]
+    d4 = [[LpVariable(f"d4{i+1}{j+1}", cat=LpBinary) for j in range(n)] for i in range(n)]
+
+    m = [w, w, l_max, l_max]
     problem += h_goal, "Height of the plate"
 
     # limit constraint
@@ -81,56 +108,55 @@ def solve(instance, timeout=300000):
     for i in range(n):
         for j in range(n):
             if i < j:
-                problem += p_x[i] + x[i] <= x[j] + m[0] * delta[i][j][0]
-                problem += p_x[j] + x[j] <= x[i] + m[1] * delta[i][j][1]
-                problem += p_y[i] + y[i] <= y[j] + m[2] * delta[i][j][2]
-                problem += p_y[j] + y[j] <= y[i] + m[3] * delta[i][j][3]
-
-                problem += lpSum(delta[i][j][k].varValue for k in range(4)) <= 3
-                # print(lpSum(delta[i][j][k] for k in range(4)))
-
-                # problem += p_x[i] + x[i] <= p_x[j]
-                # problem += p_y[i] + y[i] <= p_y[j]
+                # http://amsterdamoptimization.com/pdf/tiling.pdf
+                problem += p_x[i] >= p_x[j] + x[j] - m[0] * d1[i][j]
+                problem += p_x[i] + x[i] <= p_x[j] + m[1] * d2[i][j]
+                problem += p_y[i] >= p_y[j] + y[j] - m[2] * d3[i][j]
+                problem += p_y[i] + y[i] <= p_y[j] + m[3] * d4[i][j]
+                problem += d1[i][j] + d2[i][j] + d3[i][j] + d4[i][j] <= 3
 
     problem.solve()
 
     print(problem.status)
 
-    for i in range(n):
-        print(f"p_x{i + 1}: ", p_x[i].varValue)
-        print(f"p_y{i + 1}: ", p_y[i].varValue)
-
-    return h_goal.varValue
-
-    # print("DELTA")
-    # for i in range(n):
-    #     for j in range(n):
-    #         for k in range(4):
-    #             print(delta[i][j][k], delta[i][j][k].varValue)
+    return p_x, p_y, h_goal
 
 instance = {
-    'w': 8,
-    'n':  4,
-    'x': [3, 3, 5, 5],
-    'p_x': [0, 0, 0, 0],
-    'y': [3, 5, 3, 5],
-    'p_y': [0, 0, 0, 0]
+    'w': 9,
+    'n':  5,
+    'x': [3, 3, 3, 3, 3],
+    'p_x': [],
+    'y': [3, 4, 5, 6, 9],
+    'p_y': []
 }
 
-l = solve(instance)
+# instance = {
+#     'w': 9,
+#     'n':  5,
+#     'x': [3, 3, 3, 3, 3],
+#     'p_x': [3, 3, 3, 6, 0],
+#     'y': [3, 4, 5, 6, 9],
+#     'p_y': [9, 5, 0, 0, 0]
+# }
 
+p_x, p_y, l = solve(instance)
+l = l.varValue
 print(l)
 
-#
-# solution = instance
-# plot_solution(solution['w'],
-#                               l,
-#                               solution['n'],
-#                               solution['p_x'],
-#                               solution['p_y'],
-#                               solution['x'],
-#                               solution['y'],
-#                               "test",
-#                               "test")
+for i in range(instance['n']):
+    instance['p_x'].append(int(p_x[i].varValue))
+    instance['p_y'].append(int(p_y[i].varValue))
+
+solution = instance
+print(solution)
+plot_solution(solution['w'],
+              l,
+              solution['n'],
+              solution['p_x'],
+              solution['p_y'],
+              solution['x'],
+              solution['y'],
+              "test",
+              "test")
 
 
