@@ -5,7 +5,7 @@ This project develops a solver for the [VLSI](https://en.wikipedia.org/wiki/Very
 - Satisfiable Modulo Theory (SMT)
 - Linear Programming (LP)
 
-The project was developed for the "Combinatorial Decision Making and Optimization" course at the Artificial Intelligence master's degree at the University of Bologna. 
+The project was developed for the "Combinatorial Decision Making and Optimization" course at the Artificial Intelligence master's degree at the University of Bologna. You can find the assignment [here](assignment.pdf), in particular we chose **Problem 1**. 
 
 The task is to find a solution to 40 instances of a VLSI problem. The input is the number of circuits *n*, the width of the board *w*, and a list of circuits, in particular for every circuit we have the width *x* and the height *y*.
 

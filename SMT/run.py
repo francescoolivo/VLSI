@@ -1,8 +1,7 @@
 import argparse
 from itertools import cycle
 from os.path import exists
-import model_final
-import rotation as model_rotation
+import model_basic, model_rotation
 from z3 import *
 import utils
 import plotly.graph_objects as go
@@ -92,7 +91,7 @@ def main():
             if args.rotation:
                 solution = model_rotation.solve(instance)
             else:
-                solution = model_final.solve(instance)
+                solution = model_basic.solve(instance)
 
             if solution['found']:
                 plot_name = os.path.join(plots_dir, name + '.png')
