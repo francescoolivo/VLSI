@@ -1,8 +1,8 @@
 import argparse
 from itertools import cycle
 from os.path import exists
-import model_final
-from z3 import *
+import os
+import model_final, model_rotation
 import utils
 import plotly.graph_objects as go
 import random
@@ -62,11 +62,10 @@ def main():
     args = parser.parse_args()
 
     # model to execute
-    # if args.rotation:
-    #     model = "rotation"
-    # else:
-    #     model = "basic"
-    model = "basic"
+    if args.rotation:
+        model = "rotation"
+    else:
+        model = "basic"
 
     input_dir = args.input_dir
     output_dir = os.path.join(args.output_dir, model)
@@ -80,7 +79,7 @@ def main():
     solutions_file = os.path.join(output_dir, 'solutions.csv')
 
     with open(solutions_file, 'w') as csv_file:
-        csv_file.write("name,time\n")
+        csv_file.write("name,time,h,max_h,status\n")
 
     for file in sorted(os.listdir(input_dir)):
         if file.endswith(".txt"):
@@ -88,13 +87,12 @@ def main():
 
             instance = utils.read_file(os.path.join(input_dir, file))
             print(f"Solving instance {name}")
-            # if args.rotation:
-            #     solution = model_rotation.solve(instance)
-            # else:
-            #     solution = model_final.solve(instance)
-            solution = model_final.solve(instance)
+            if args.rotation:
+                solution = model_rotation.solve(instance)
+            else:
+                solution = model_final.solve(instance)
 
-            if solution['found']:
+            if solution['status'] == 1:
                 plot_name = os.path.join(plots_dir, name + '.png')
                 plot_solution(solution['w'],
                               solution['length'],
@@ -111,7 +109,7 @@ def main():
                 print("Solution not found in time")
 
             with open(solutions_file, 'a') as csv_file:
-                csv_file.write(f"{name},{solution['time']:.5f}\n")
+                csv_file.write(f"{name},{solution['time']:.5f},{solution['length']},{solution['max_l']},{solution['status']}\n")
 
 
 if __name__ == '__main__':

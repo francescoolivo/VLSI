@@ -25,7 +25,7 @@ def solve(instance):
     d4 = [[LpVariable(f"d4{i + 1}{j + 1}", cat=LpBinary) for j in range(n)] for i in range(n)]
 
     m = [w, w, l_max, l_max]
-    problem += h_goal, "Height of the plate"
+    problem += h_goal, "main objective"
 
     # limit constraint
     for i in range(n):
@@ -42,18 +42,21 @@ def solve(instance):
                 problem += p_y[i] + y[i] <= p_y[j] + m[3] * d4[i][j]
                 problem += d1[i][j] + d2[i][j] + d3[i][j] + d4[i][j] <= 3
 
-    problem.solve(PULP_CBC_CMD(msg=False, maxSeconds=300))
+    problem.solve(GUROBI(msg=False, timeLimit=300))
 
     p_x_sol = []
     p_y_sol = []
 
+    # if problem.status == 1:
     for i in range(instance['n']):
-        p_x_sol.append(int(p_x[i].varValue))
-        p_y_sol.append(int(p_y[i].varValue))
+        p_x_sol.append(p_x[i].varValue)
+        p_y_sol.append(p_y[i].varValue)
+    h = h_goal.varValue
+
 
     # storing result
-    solution = {'w': w, 'n': n, 'length': int(h_goal.varValue), 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
-                'time': problem.solutionTime, 'found': bool(problem.status)}
+    solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
+                'time': problem.solutionTime, 'status': problem.status, 'max_l': l_max}
 
     return solution
 
