@@ -92,7 +92,7 @@ def main():
             else:
                 solution = model_final.solve(instance)
 
-            if solution['status'] == 1:
+            if solution['status'] >= 0:
                 plot_name = os.path.join(plots_dir, name + '.png')
                 plot_solution(solution['w'],
                               solution['length'],

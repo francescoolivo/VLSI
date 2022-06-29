@@ -53,10 +53,16 @@ def solve(instance):
     p_x_sol = []
     p_y_sol = []
 
-    for i in range(instance['n']):
-        p_x_sol.append(p_x[i].varValue)
-        p_y_sol.append(p_y[i].varValue)
-    h = h_goal.varValue
+    if problem.status == 1:
+        for i in range(n):
+            p_x_sol.append(p_x[i].varValue)
+            p_y_sol.append(p_y[i].varValue)
+        h = h_goal.varValue
+    else:
+        h = problem.solverModel.getVarByName("height").X
+        for i in range(n):
+            p_x_sol.append(problem.solverModel.getVarByName(f"x{i+1:02d}").X)
+            p_y_sol.append(problem.solverModel.getVarByName(f"y{i+1:02d}").X)
 
     # storing result
     solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
