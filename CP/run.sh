@@ -3,5 +3,5 @@
 rm $5 >/dev/null 2>&1
 
 for input in $(ls $3/*.dzn);
-do minizinc -s --solver-time-limit 300000 --solver Gecode $1 $input | python3 $2 $input $4 $5;
+do minizinc -s --solver-time-limit 30000 --solver Gecode $1 $input | python3 $2 $input $4 $5;
 done
