@@ -6,10 +6,10 @@ int: n;
 array[1..n, 1..2] of int: circuits;
 
 % decreasing area order
-%array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]); 
+% array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]); 
 
 % decreasing height order
-% array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
+array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
 
 % decreasing perimeter (half) order
 % array[int] of int: order = arg_sort([-circuits[i, 1]+circuits[i, 2] | i in 1..n]); 
@@ -49,24 +49,10 @@ constraint p_x[1] == 0 /\ p_y[1] == 0;
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (x[i]==x[j] /\ y[i]==y[j]) then lex_less([p_x[i], p_y[i]], [p_x[j], p_y[j]]) endif);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%solve :: seq_search([ % min_domain_h (LFIRST)
-%         int_search([h], input_order, indomain_min), int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min)])
-%minimize h;
 
-%solve :: seq_search([ % median_domain_h (LFIRST)
-%          int_search([h], input_order, indomain_median), int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min)])
-%minimize h;
-
-%solve :: seq_search([ % min_domain_h (PLATEFIRST)
-%          int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min), int_search([h, input_order, indomain_min)])
-%minimize h;
-
-
-%solve :: seq_search([ % median_domain_h (PLATEFIRST)
-%          int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min), int_search([h], input_order, indomain_median)])
-%minimize h;
-
-solve minimize h;
+solve :: seq_search([ % median_domain_h (LFIRST)
+         int_search([h], input_order, indomain_min), int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min)])
+minimize h;
 
 output ["\(w)\n", 
         "\(h)\n",
