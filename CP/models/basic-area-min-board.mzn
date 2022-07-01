@@ -18,8 +18,8 @@ array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]
 % array[int] of int: order = arg_sort([-circuits[i, 2]/circuits[i, 1] | i in 1..n]); 
 
 % we extract widths e heights
-array[1..n] of int: x = [circuits[i, 1] | i in 1..n]; 
-array[1..n] of int: y = [circuits[i, 2] | i in 1..n];
+array[1..n] of int: x = [circuits[i, 1] | i in order];
+array[1..n] of int: y = [circuits[i, 2] | i in order];
 
 
 % lower and upper bounder for h %int: min_h = max(heights);

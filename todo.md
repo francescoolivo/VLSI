@@ -16,3 +16,4 @@
 8. Add rotation to CP
 9. ~~Add out files to CP~~
 10. Write run_all as python file
+11. Find paper on symmetries in LP

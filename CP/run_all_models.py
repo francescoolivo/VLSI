@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-i", "--input_dir", help="Path to the directory containing the initial instances",
-                        required=False, type=str, default="../instances/txt")
+                        required=False, type=str, default="../instances/dzn")
     parser.add_argument("-o", "--output_dir",
                         help="Path to the directory that will contain the output solutions in .txt format",
                         required=False, type=str, default="out")
@@ -26,7 +26,7 @@ def main():
                         required=False, type=int)
     args = parser.parse_args()
 
-    for file in absoluteFilePaths(args.model_dir):
+    for file in sorted(absoluteFilePaths(args.model_dir)):
         if not file.endswith(".mzn"):
             continue
 

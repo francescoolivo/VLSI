@@ -57,7 +57,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-i", "--input_dir", help="Path to the directory containing the initial instances",
-                        required=False, type=str, default="../instances/txt")
+                        required=False, type=str, default="../instances/dzn")
     parser.add_argument("-o", "--output_dir",
                         help="Path to the directory that will contain the output solutions in .txt format",
                         required=False, type=str, default="out")
@@ -85,7 +85,7 @@ def main():
     with open(solutions_file, 'w') as csv_file:
         csv_file.write("name,time,h,valid,optimal\n")
 
-    for file in absoluteFilePaths(input_dir):
+    for file in sorted(absoluteFilePaths(input_dir)):
         if not file.endswith(".dzn"):
             continue
 
@@ -95,9 +95,12 @@ def main():
         command = f'minizinc -s --solver-time-limit {args.timeout * 1000} --solver Gecode {os.path.abspath(args.model)} {os.path.abspath(file)}'
         # print(command)
 
-        result = subprocess.getoutput(command)
+        full_result = subprocess.getoutput(command)
 
-        result = os.linesep.join(result.split(os.linesep)[7:])
+        result = os.linesep.join(full_result.split(os.linesep)[7:])
+
+        while result.split(os.linesep)[0].startswith('%%%mzn-stat'):
+            result = os.linesep.join(result.split(os.linesep)[1:])
 
         time = args.timeout
         h = None
@@ -105,7 +108,7 @@ def main():
         optimal = False
 
         if result.split(os.linesep)[0] == "=====UNKNOWN=====":
-            print("could not find result")
+            print(f"Could not find a result for instance {name}")
 
         else:
             w = int(result.split(os.linesep)[0])
