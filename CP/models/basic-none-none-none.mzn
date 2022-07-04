@@ -44,6 +44,9 @@ constraint cumulative(p_y, y, x, w);
 % we impose that the circuits with the larger area starts from (0,0)
 constraint p_x[1] == 0 /\ p_y[1] == 0;
 
+constraint diffn_nonstrict(p_x, p_y, x, y);
+constraint forall(r1,r2 in 1..n where r1 < r2 /\ p_y[r1]=p_y[r2] /\ p_x[r1]+x[r1]=p_x[r2] /\ y[r1]=y[r2]) (lex_less([p_x[r1]],[p_x[r2]]));
+constraint forall(r1,r2 in 1..n  where r1 < r2 /\ p_x[r1]=p_x[r2] /\ p_y[r1]+y[r1]=p_y[r2] /\ x[r1]=x[r2]) (lex_less([p_y[r1]],[p_y[r2]]));
 
 % symmetry breaking for circuits with same dimensions
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (x[i]==x[j] /\ y[i]==y[j]) then lex_less([p_x[i], p_y[i]], [p_x[j], p_y[j]]) endif);

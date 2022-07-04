@@ -92,26 +92,32 @@ def main():
         name = file.split(os.sep)[-1].split('.')[0]
         print(f"Solving instance {name}")
 
-        command = f'minizinc -s --solver-time-limit {args.timeout * 1000} --solver Gecode {os.path.abspath(args.model)} {os.path.abspath(file)}'
+        command = f'minizinc -s --time-limit {args.timeout * 1000} --solver Chuffed {os.path.abspath(args.model)} {os.path.abspath(file)}'
         # print(command)
 
-        full_result = subprocess.getoutput(command)
+        result = subprocess.getoutput(command)
 
-        result = os.linesep.join(full_result.split(os.linesep)[7:])
-
-        while result.split(os.linesep)[0].startswith('%%%mzn-stat'):
-            result = os.linesep.join(result.split(os.linesep)[1:])
+        # result = os.linesep.join(full_result.split(os.linesep)[7:])
 
         time = args.timeout
         h = None
         valid = False
         optimal = False
 
+        while result.split(os.linesep)[0].startswith('%') or result.split(os.linesep)[0].startswith('WARNING'):
+            if "solveTime" in result.split(os.linesep)[0]:
+                time = float(result.split(os.linesep)[0].split("=")[-1])
+            result = os.linesep.join(result.split(os.linesep)[1:])
+
         if result.split(os.linesep)[0] == "=====UNKNOWN=====":
             print(f"Could not find a result for instance {name}")
 
         else:
-            w = int(result.split(os.linesep)[0])
+            try:
+                w = int(result.split(os.linesep)[0])
+            except ValueError:
+                print(full_result)
+                exit(1)
             h = int(result.split(os.linesep)[1])
             n = int(result.split(os.linesep)[2])
             p_x = result.split(os.linesep)[3].replace('[', '').replace(']', '')
@@ -137,12 +143,12 @@ def main():
             if result.split(os.linesep)[7] == "----------":
                 valid = True
 
-            time_line = 9
-            if result.split(os.linesep)[8] == "==========":
-                optimal = True
-                time_line = 10
-
-            time = float(result.split(os.linesep)[time_line].split("=")[-1])
+            # time_line = 9
+            # if result.split(os.linesep)[8] == "==========":
+            #     optimal = True
+            #     time_line = 10
+            #
+            # time = float(result.split(os.linesep)[time_line].split("=")[-1])
 
 
         with open(solutions_file, 'a') as csv_file:
