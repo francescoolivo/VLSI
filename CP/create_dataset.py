@@ -9,6 +9,9 @@ def main():
     parser.add_argument("-d", "--dir",
                         help="The directory storing the results",
                         required=False, type=str, default="out")
+    parser.add_argument("-o", "--output_file",
+                        help="The output file where to save results",
+                        required=False, type=str, default="performances.csv")
 
     args = parser.parse_args()
 
@@ -34,7 +37,7 @@ def main():
 
     df = pd.concat(frames)
 
-    df.to_csv("performances.csv")
+    df.to_csv(args.output_file)
 
 if __name__ == '__main__':
     main()

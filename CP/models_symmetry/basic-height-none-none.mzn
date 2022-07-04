@@ -9,7 +9,7 @@ array[1..n, 1..2] of int: circuits;
 %array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]); 
 
 % decreasing height order
-% array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
+array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]);
 
 % decreasing perimeter (half) order
 % array[int] of int: order = arg_sort([-circuits[i, 1]+circuits[i, 2] | i in 1..n]); 
@@ -18,8 +18,8 @@ array[1..n, 1..2] of int: circuits;
 % array[int] of int: order = arg_sort([-circuits[i, 2]/circuits[i, 1] | i in 1..n]); 
 
 % we extract widths e heights
-array[1..n] of int: x = [circuits[i, 1] | i in 1..n]; 
-array[1..n] of int: y = [circuits[i, 2] | i in 1..n];
+array[1..n] of int: x = [circuits[i, 1] | i in order];
+array[1..n] of int: y = [circuits[i, 2] | i in order];
 
 
 % lower and upper bounder for h %int: min_h = max(heights);
@@ -45,28 +45,13 @@ constraint cumulative(p_y, y, x, w);
 constraint p_x[1] == 0 /\ p_y[1] == 0;
 
 
-% symmetry breaking for circuits with same dimensions
+%symmetry breaking for circuits with same dimensions
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (x[i]==x[j] /\ y[i]==y[j]) then lex_less([p_x[i], p_y[i]], [p_x[j], p_y[j]]) endif);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%solve :: seq_search([ % min_domain_h (LFIRST)
-%         int_search([h], input_order, indomain_min), int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min)])
-%minimize h;
-
-%solve :: seq_search([ % median_domain_h (LFIRST)
-%          int_search([h], input_order, indomain_median), int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min)])
-%minimize h;
-
-%solve :: seq_search([ % min_domain_h (PLATEFIRST)
-%          int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min), int_search([h, input_order, indomain_min)])
-%minimize h;
-
-
-%solve :: seq_search([ % median_domain_h (PLATEFIRST)
-%          int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min), int_search([h], input_order, indomain_median)])
-%minimize h;
-
-solve minimize h;
+solve :: seq_search([ % min_domain_h (LFIRST)
+         int_search([h], input_order, indomain_median), int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min)])
+minimize h;
 
 output ["\(w)\n", 
         "\(h)\n",

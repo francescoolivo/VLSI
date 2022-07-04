@@ -50,6 +50,8 @@ constraint cumulative(p_y, y_r, x_r, w);
 % we impose that the circuits with the larger area starts from (0,0)
 constraint p_x[1] == 0 /\ p_y[1] == 0;
 
+% avoid rotation of squares
+constraint forall(i in 1..n)(x[i] == y[i] -> rotation[i]==false);
 
 %symmetry breaking for circuits with same dimensions
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (x_r[i]==x_r[j] /\ y_r[i]==y_r[j]) then lex_less([p_x[i], p_y[i]], [p_x[j], p_y[j]]) endif);
