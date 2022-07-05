@@ -1,4 +1,5 @@
 import argparse
+import concurrent.futures
 from itertools import cycle
 from os.path import exists
 import model_basic, model_rotation
@@ -8,10 +9,9 @@ import plotly.graph_objects as go
 import random
 import plotly.express as px
 
-palette = cycle(px.colors.qualitative.Plotly)
-
-
 def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
+    palette = cycle(px.colors.qualitative.Plotly)
+
     r = random.Random(42)
 
     fig = go.Figure()
@@ -60,6 +60,11 @@ def main():
                         required=False, type=str, default="out")
     parser.add_argument("-r", "--rotation", help="Flag to decide whether it is possible use rotated circuits",
                         required=False, action='store_true', default=False)
+    parser.add_argument("-s", "--save_plots", help="Whether to save the plots",
+                        required=False, action='store_true', default=False)
+    parser.add_argument("-t", "--timeout", help="The timeout to impose in seconds",
+                        required=False, type=int, default=300)
+
     args = parser.parse_args()
 
     # model to execute
@@ -74,7 +79,7 @@ def main():
         os.makedirs(output_dir)
 
     plots_dir = os.path.join(output_dir, "plots")
-    if not exists(plots_dir):
+    if not exists(plots_dir) and args.save_plots:
         os.makedirs(plots_dir)
 
     solutions_file = os.path.join(output_dir, 'solutions.csv')
@@ -88,6 +93,7 @@ def main():
 
             instance = utils.read_file(os.path.join(input_dir, file))
             print(f"Solving instance {name}")
+
             if args.rotation:
                 solution = model_rotation.solve(instance)
             else:
@@ -95,15 +101,16 @@ def main():
 
             if solution['found']:
                 plot_name = os.path.join(plots_dir, name + '.png')
-                plot_solution(solution['w'],
-                              solution['length'],
-                              solution['n'],
-                              solution['p_x'],
-                              solution['p_y'],
-                              solution['x'],
-                              solution['y'],
-                              name,
-                              plot_name)
+                if args.save_plots:
+                    plot_solution(solution['w'],
+                                  solution['length'],
+                                  solution['n'],
+                                  solution['p_x'],
+                                  solution['p_y'],
+                                  solution['x'],
+                                  solution['y'],
+                                  name,
+                                  plot_name)
                 utils.write_file(os.path.join(output_dir, name + ".txt"), solution)
                 print(f"Solution found in time {solution['time']}")
             else:

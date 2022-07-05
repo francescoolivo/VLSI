@@ -1,9 +1,35 @@
-from z3 import *
+from pysmt.typing import *
+from pysmt.shortcuts import *
 import numpy as np
-import utils
 from itertools import combinations
 import time
+from utils import get_min_length, get_max_length
+from pysmt.solvers import *
+from pysmt.logics import *
+from pysmt.shortcuts import Equals, Symbol, And, Or, GE, LE, Ite, Int, get_model, ForAll, AllDifferent
 
+def smt_max(l: list):
+    maximum = l[0]
+
+    for value in l[1:]:
+
+        maximum = Ite(value > maximum, value, maximum)
+
+    return maximum
+# cumulative_y = smt_cumulative(r, p_y, y, x, w)
+# Ite(r[i], Int(duration[i]), Int(resource))
+def smt_cumulative(r, start, duration, resources, total):
+    decomposition = []
+    for resource in resources:
+        decomposition.append(
+            LE(Plus(*[
+                    Ite(    And(LE( start[i], Ite(r[i], Int(duration[i]), Int(resource)) ),
+                            LT( Ite(r[i], Int(duration[i]), Int(resource)), start[i] + Ite(r[i], Int(resource), Int(duration[i])))),
+                            Ite(r[i], Int(duration[i]), Int(resource)), Int(0))
+                        for i in range(len(start))]),
+                Int(total))
+        )
+    return decomposition
 
 def solve(instance, timeout=300000):
 
@@ -12,109 +38,102 @@ def solve(instance, timeout=300000):
     x = instance['x']
     y = instance['y']
 
-    l_max = utils.get_max_length(x, y, w)
+    l_max = get_max_length(x, y, w)
+    l_min = get_min_length(x, y, w)
 
     # index of the circuit with the highest value
-    index = np.argmax(np.asarray(y))
+    index = np.argmax(np.asarray(y)*np.asarray(x))
 
     # area of each circuit
     areas = [x[i] * y[i] for i in range(n)]
 
     # definition of the variables
 
+    # x -> Ite(r[i], y[i], x[i])
+    # y -> Ite(r[i], x[i], y[i])
+
     # coordinates of the points
-    p_x = [Int(f"p_x_{str(i + 1)}") for i in range(n)]
-    p_y = [Int(f"p_y_{str(i + 1)}") for i in range(n)]
+    r = [Symbol(f"r_{str(i + 1)}") for i in range(n)]
+    p_x = [Symbol(f"p_x_{str(i + 1)}", INT) for i in range(n)]
+    p_y = [Symbol(f"p_y_{str(i + 1)}", INT) for i in range(n)]
 
-    # rotation array
-    rotation = [Bool("rot_%s" % str(i+1)) for i in range(n)]
+    h = Symbol("h", INT)
 
-    # real dimensions of circuits considering rotation
-    x_r = [If(And(x[i] != y[i], rotation[i]), y[i], x[i]) for i in range(n)]
-    y_r = [If(And(x[i] != y[i], rotation[i]), x[i], y[i]) for i in range(n)]
 
-    # maximum height to minimize
-    # length = utils.z3_max([p_y[i] + y[i] for i in range(n)])
-    length = utils.z3_max([p_y[i] + y_r[i] for i in range(n)])
+    domain_x = []
+    domain_y = []
+    #domain_h = [And(GE(h,Int(l_min)), LE(h, Int(l_max)))]
 
-    # domain bounds
-    domain_x = [p_x[i] >= 0 for i in range(n)]
-    domain_y = [p_y[i] >= 0 for i in range(n)]
+    domain_x = [And(GE(p_x[i], Int(0)), LE(p_x[i], Int(w))) for i in range(n)]
+    domain_y = [And(GE(p_y[i], Int(0)), LE(p_y[i], Int(l_max))) for i in range(n)]
 
-    # lengths bound
-    width_bound = [And(x_r[i] >= 1, x_r[i] <= w) for i in range(n)]
-    height_bound = [And(y_r[i] >= 1, y_r[i] <= l_max) for i in range(n)]
+    main_constraint = []
+    for i in range(n):
+        main_constraint.append(LE(p_x[i]+Ite(r[i], Int(y[i]), Int(x[i])) , Int(w)))
+        main_constraint.append(LE(p_y[i]+Ite(r[i], Int(x[i]), Int(y[i])), h))
 
-    # different coordinates
-    all_different = [Distinct([p_y[i] + p_x[i]]) for i in range(n)]
 
     # cumulative constraints
-    cumulative_y = utils.z3_cumulative(p_y, y_r, x_r, w)
-    cumulative_x = utils.z3_cumulative(p_x, x_r, y_r, l_max)
-
-    # maximum width
-    max_w = [utils.z3_max([p_x[i] + x_r[i] for i in range(n)]) <= w]
+    cumulative_y = smt_cumulative(r, p_y, y, x, w)
+    cumulative_x = smt_cumulative(r, p_x, x, y, l_max)
 
     # maximum height
-    max_h = [utils.z3_max([p_y[i] + y_r[i] for i in range(n)]) <= l_max]
+    max_h = []
+    max_w = []
+    for i in range(n):
+        max_h.append(LE(p_y[i] + Ite(r[i], Int(x[i]), Int(y[i])) , Int(l_max)))
+        max_w.append(LE(p_x[i] + Ite(r[i], Int(y[i]), Int(x[i]))  ,Int(w)))
+
 
     # relationship avoiding overlapping
     overlapping = []
     for (i, j) in combinations(range(n), 2):
-        overlapping.append(Or(p_x[i] + x_r[i] <= p_x[j],
-                              p_x[j] + x_r[j] <= p_x[i],
-                              p_y[i] + y_r[i] <= p_y[j],
-                              p_y[j] + y_r[j] <= p_y[i])
-                           )
+        overlapping.append(Or(  LE(p_x[i] + Ite(r[i], Int(y[i]), Int(x[i])) ,p_x[j]),
+                                LE(p_x[j] + Ite(r[j], Int(y[j]), Int(x[j])) ,p_x[i]),
+                                LE(p_y[i] + Ite(r[i], Int(x[i]), Int(y[i])) ,p_y[j]),
+                                LE(p_y[j] + Ite(r[j], Int(x[j]), Int(y[j])) ,p_y[i]),
+                           ))
 
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
-    symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
+    symmetry = [And(Equals(p_x[index], Int(0))), Equals(p_y[index], Int(0))]
 
-    # circuits must be pushed on the left
-    left = [sum([If(p_x[i] <= w // 2, areas[i], 0) for i in range(n)])
-            >= sum([If(p_x[i] > w // 2, areas[i], 0) for i in range(n)])]
-
+    k = l_min
     # setting the optimizer
-    opt = Optimize()
-    opt.add(domain_x + domain_y + overlapping + all_different + cumulative_x +
-            cumulative_y + max_w + max_h + symmetry + width_bound + height_bound + left)
-    opt.minimize(length)
+    formula = And(Equals(h, Int(k)), *domain_x, *domain_y,*main_constraint,
+                     *overlapping, *max_w, *max_h, *cumulative_x, *cumulative_y)
 
-    # maximum time of execution
-    opt.set("timeout", timeout)
+    start_time = time.time()
+    #{z3->timeout - cvc4->tlimit} solver_options={"timeout": 300*1000}
 
+    with Solver(name="z3",solver_options={"timeout": 300*1000, "unsat_core" : True, "auto_config" : True}) as solver:
+        solver.add_assertion(formula)
+        try:
+            while not solver.is_sat(formula):
+                    k = k + 1
+                    formula = And(*domain_x,*cumulative_x, *cumulative_y,
+                                    *domain_y, *main_constraint, *overlapping, *max_w, *max_h, Equals(h, Int(k)))
+                    solver.reset_assertions()
+                    solver.add_assertion(formula)
+
+            model = solver.get_model()
+            h = model.get_value(h).constant_value()
+        except:
+            elapsed_time = time.time() - start_time
+            print("errore")
+            solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': [], 'p_y': [],
+                     'time': elapsed_time, 'found': False}
+            return solution
+
+    elapsed_time = time.time() - start_time
     p_x_sol = []
     p_y_sol = []
-    x_sol = []
-    y_sol = []
 
-    # solving the problem
-    start_time = time.time()
+    for i in range(n):
+        p_x_sol.append(model.get_value(p_x[i]).constant_value())
+        p_y_sol.append(model.get_value(p_y[i]).constant_value())
+        if model.get_value(r[i]).constant_value():
+            x[i], y[i] = y[i], x[i]
 
-
-    if opt.check() == sat:
-        model = opt.model()
-        elapsed_time = time.time() - start_time
-        # getting values of variables
-        for i in range(n):
-            p_x_sol.append(model.evaluate(p_x[i]).as_long())
-            p_y_sol.append(model.evaluate(p_y[i]).as_long())
-            x_sol.append(model.evaluate(x_r[i]).as_long())
-            y_sol.append(model.evaluate(y_r[i]).as_long())
-
-
-        length_sol = model.evaluate(length).as_long()
-
-        # storing result
-        solution = {'w': w, 'n': n, 'length': length_sol, 'x': x_sol, 'y': y_sol, 'p_x': p_x_sol, 'p_y': p_y_sol,
-                    'time': elapsed_time, 'found': True}
-
-    else:
-        elapsed_time = time.time() - start_time
-        solution = {'found': False, 'time': elapsed_time}
-
+    solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
+                     'time': elapsed_time, 'found': True}
     return solution
-
-
-
-
