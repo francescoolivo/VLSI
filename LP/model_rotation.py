@@ -48,7 +48,7 @@ def solve(instance):
                 problem += p_y[i] + (y[i] * rotation_f[i] + x[i] * rotation_t[i]) <= p_y[j] + m[3] * d4[i][j]
                 problem += d1[i][j] + d2[i][j] + d3[i][j] + d4[i][j] <= 3
 
-    problem.solve(GUROBI(msg=False, timeLimit=300))
+    problem.solve(CPLEX_PY(msg=False, timeLimit=300))
 
     p_x_sol = []
     p_y_sol = []

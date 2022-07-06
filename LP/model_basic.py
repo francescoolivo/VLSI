@@ -1,6 +1,6 @@
 from pulp import *
 from utils import get_min_length, get_max_length
-
+import numpy as np
 
 def solve(instance):
 
@@ -8,6 +8,8 @@ def solve(instance):
     n = instance['n']
     x = instance['x']
     y = instance['y']
+
+    index = np.argmax(np.asarray(y) * np.asarray(x))
 
     problem = LpProblem("VLSI", LpMinimize)
 
@@ -42,7 +44,11 @@ def solve(instance):
                 problem += p_y[i] + y[i] <= p_y[j] + m[3] * d4[i][j]
                 problem += d1[i][j] + d2[i][j] + d3[i][j] + d4[i][j] <= 3
 
-    problem.solve(GUROBI(msg=False, timeLimit=300))
+    #larger plate in 0,0
+    problem += p_x[index] == 0
+    problem += p_y[index] == 0
+
+    problem.solve(CPLEX_PY(msg=False, timeLimit=300))
 
     p_x_sol = []
     p_y_sol = []
