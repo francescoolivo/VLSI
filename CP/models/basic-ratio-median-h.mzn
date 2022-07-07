@@ -6,7 +6,7 @@ int: n;
 array[1..n, 1..2] of int: circuits;
 
 % decreasing area order
-array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]); 
+% array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]);
 
 % decreasing height order
 % array[int] of int: order = arg_sort([-circuits[i, 2] | i in 1..n]); 
@@ -15,12 +15,13 @@ array[int] of int: order = arg_sort([-circuits[i, 1]*circuits[i, 2] | i in 1..n]
 % array[int] of int: order = arg_sort([-circuits[i, 1]+circuits[i, 2] | i in 1..n]); 
 
 % decreasing height/width ratio order
-% array[int] of int: order = arg_sort([-circuits[i, 2]/circuits[i, 1] | i in 1..n]); 
+array[int] of int: order = arg_sort([-circuits[i, 2]/circuits[i, 1] | i in 1..n]);
 
 % we extract widths e heights
 array[1..n] of int: x = [circuits[i, 1] | i in order];
 array[1..n] of int: y = [circuits[i, 2] | i in order];
 
+constraint diffn_nonstrict(p_x, p_y, x, y);
 constraint forall(r1,r2 in 1..n where r1 < r2 /\ p_y[r1]=p_y[r2] /\ p_x[r1]+x[r1]=p_x[r2] /\ y[r1]=y[r2]) (lex_less([p_x[r1]],[p_x[r2]]));
 constraint forall(r1,r2 in 1..n  where r1 < r2 /\ p_x[r1]=p_x[r2] /\ p_y[r1]+y[r1]=p_y[r2] /\ x[r1]=x[r2]) (lex_less([p_y[r1]],[p_y[r2]]));
 

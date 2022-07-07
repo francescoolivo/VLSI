@@ -99,7 +99,7 @@ def solve(instance, timeout=300000):
 
     k = l_min
     # setting the optimizer
-    formula = And(Equals(h, Int(k)), *domain_x, *domain_y,*main_constraint,
+    formula = And(Equals(h, Int(k)), *domain_x, *domain_y, *main_constraint,
                      *overlapping, *max_w, *max_h, *cumulative_x, *cumulative_y)
 
     start_time = time.time()

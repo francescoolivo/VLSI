@@ -55,9 +55,9 @@ constraint p_x[1] == 0 /\ p_y[1] == 0;
 constraint forall(i in 1..n-1, j in 2..n where i<j) ( if (x_r[i]==x_r[j] /\ y_r[i]==y_r[j]) then lex_less([p_x[i], p_y[i]], [p_x[j], p_y[j]]) endif);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%solve :: seq_search([ % min_domain_h (PLATEFIRST)
-%          int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min), int_search([h, input_order, indomain_min)])
-%minimize h;
+solve :: seq_search([ % min_domain_h (PLATEFIRST)
+          int_search(p_x, input_order, indomain_min) :: int_search(p_y, input_order, indomain_min), int_search([h, input_order, indomain_min)])
+minimize h;
 
 output ["\(w)\n", 
         "\(h)\n",
