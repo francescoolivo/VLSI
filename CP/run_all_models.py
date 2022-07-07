@@ -20,6 +20,8 @@ def main():
                         required=False, type=str, default="out")
     parser.add_argument("-m", "--model_dir", help="The directory containing the MiniZinc files to execute",
                         required=True, type=str)
+    parser.add_argument("--solver", help="The solver to use",
+                        required=False, type=str, default="Chuffed")
     parser.add_argument("-s", "--save_plots", help="Whether to save the plots",
                         required=False, action='store_true', default=False)
     parser.add_argument("-t", "--timeout", help="The timeout to impose in seconds",
@@ -32,7 +34,7 @@ def main():
 
         timeout_string = f' --timeout {args.timeout} ' if args.timeout else ''
         save_plots_string = ' -s ' if args.save_plots else ''
-        command = f'python3 run.py -i {args.input_dir} -o {args.output_dir} -m {file}{timeout_string}{save_plots_string}'
+        command = f'python3 run.py -i {args.input_dir} -o {args.output_dir} -m {file}{timeout_string}{save_plots_string} --solver {args.solver}'
 
         model_name = file.split(os.sep)[-1].split('.')[0]
 

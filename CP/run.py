@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import random
 import plotly.express as px
 
+
 def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
     palette = cycle(px.colors.qualitative.Plotly)
 
@@ -47,11 +48,13 @@ def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
     # fig.show()
     fig.write_image(filename, width=1200, height=1200)
 
+
 # https://stackoverflow.com/questions/9816816/get-absolute-paths-of-all-files-in-a-directory
 def absoluteFilePaths(directory):
     for dir_path, _, filenames in os.walk(directory):
         for f in filenames:
             yield os.path.abspath(os.path.join(dir_path, f))
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -63,6 +66,8 @@ def main():
                         required=False, type=str, default="out")
     parser.add_argument("-m", "--model", help="The MiniZinc file to execute",
                         required=True, type=str)
+    parser.add_argument("--solver", help="The solver to use",
+                        required=False, type=str, default="Chuffed")
     parser.add_argument("-s", "--save_plots", help="Whether to save the plots",
                         required=False, action='store_true', default=False)
     parser.add_argument("-t", "--timeout", help="The timeout to impose in seconds",
@@ -92,10 +97,10 @@ def main():
         name = file.split(os.sep)[-1].split('.')[0]
         print(f"Solving instance {name}")
 
-        command = f'minizinc -s --time-limit {args.timeout * 1000} --solver Chuffed {os.path.abspath(args.model)} {os.path.abspath(file)}'
-        # print(command)
+        command = f'minizinc -s --time-limit {args.timeout * 1000} --solver chuffed -f {os.path.abspath(args.model)} {os.path.abspath(file)}'
 
         result = subprocess.getoutput(command)
+
 
         # result = os.linesep.join(full_result.split(os.linesep)[7:])
 
@@ -116,7 +121,8 @@ def main():
             try:
                 w = int(result.split(os.linesep)[0])
             except ValueError:
-                print(full_result)
+                print("Could not parse w as int. Output was:")
+                print(result)
                 exit(1)
             h = int(result.split(os.linesep)[1])
             n = int(result.split(os.linesep)[2])
@@ -150,7 +156,6 @@ def main():
             #
             # time = float(result.split(os.linesep)[time_line].split("=")[-1])
 
-
         with open(solutions_file, 'a') as csv_file:
             csv_file.write(
                 f"{name},{time:.5f},{h},{valid},{optimal}\n")
@@ -158,5 +163,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
