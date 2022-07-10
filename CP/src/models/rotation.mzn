@@ -1,5 +1,5 @@
 include "globals.mzn";
-include "chuffed.mzn";
+
 % input
 int: w;
 int: n;
