@@ -15,7 +15,6 @@ array[1..n] of int: y = [circuits[i, 2] | i in order];
 % lower and upper bounder for h %int: min_h = max(heights);
 int: h_min = max(y ++  [ceil(sum([y[i]*x[i] | i in 1..n])/w)]);
 
-%TOCHANGE
 int: h_max = ceil(h_min + sum(y) / 2);
 
 % what we are looking for
@@ -41,6 +40,10 @@ constraint cumulative(p_y, y_r, x_r, w);
 % symmetry breaking constraint
 % we impose that the circuits with the larger area starts from (0,0)
 constraint p_x[1] == 0 /\ p_y[1] == 0;
+
+% Equals(Plus(*[Ite(Equals(p_y[i], Int(0)), Int(x[i]), Int(0)) for i in range(n)]), Int(w))
+array[1..n] of var int: y_0 = [if p_y[i] = 0 then x_r[i] else 0 endif | i in 1..n];
+constraint sum(y_0) == w;
 
 % avoid rotation of squares
 constraint forall(i in 1..n)(if x[i] == y[i] then r[i]==false endif);

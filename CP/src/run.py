@@ -94,7 +94,7 @@ def main():
             continue
 
         name = file.split(os.sep)[-1].split('.')[0]
-        print(f"Solving instance {name}, solver is {args.solver}")
+        print(f"Solving instance {name}")
         out_name = name.lower().replace("ins", "out")
 
         command = f'minizinc -s --time-limit {args.timeout * 1000} --solver chuffed -f {os.path.abspath(args.model)} {os.path.abspath(file)}'
