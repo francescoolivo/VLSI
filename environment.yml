@@ -87,7 +87,13 @@ dependencies:
   - zlib=1.2.12=h7f8727e_2
   - zstd=1.4.9=haebb681_0
   - pip:
+    - absl-py==1.1.0
     - gurobipy==9.5.1
+    - ortools==9.3.10497
+    - pebble==4.6.3
     - plotly==5.8.0
+    - protobuf==4.21.2
     - pulp==2.6.0
+    - pyrfc3339==1.1
+    - pysmt==0.9.5
     - z3-solver==4.8.17.0
