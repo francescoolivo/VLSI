@@ -1,6 +1,6 @@
 # VLSI solver
 
-This project develops a solver for the [VLSI](https://en.wikipedia.org/wiki/Very_Large_Scale_Integration) problem using three different technologies:
+[This project](https://github.com/francescoolivo/VLSI) develops a solver for the [VLSI](https://en.wikipedia.org/wiki/Very_Large_Scale_Integration) problem using three different technologies:
 - Constraint Programming (CP)
 - Satisfiable Modulo Theory (SMT)
 - Linear Programming (LP)
@@ -30,3 +30,9 @@ conda activate VLSI
 ```
 
 If you want to call the environment with a different name, you just have to change the environment name in the first line of the `environment.yml` file.
+
+## Performances
+
+This is a comparison among the performances of the solvers, without allowing rotation:
+
+![image](misc/plots/solvers.png)
