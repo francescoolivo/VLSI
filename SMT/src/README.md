@@ -25,4 +25,4 @@ Where:
 
 The script saves all the found results in a file `out-N.txt`, a `solutions.csv` file to easily compare the results, and, in case the `-p` flag was set, a `plots` directory containing images as the following one:
 
-![image](../out/basic/plots/out-18.png)
+![image](![image](/SMT/out/basic/plots/out-39.png))
