@@ -2,7 +2,6 @@ import argparse
 from itertools import cycle
 from os.path import exists
 import model_basic, model_rotation
-from z3 import *
 import utils
 import plotly.graph_objects as go
 import random

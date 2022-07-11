@@ -1,5 +1,5 @@
 import math
-from z3 import *
+
 
 def read_file(filename):
     with open(filename, 'r') as f:
@@ -52,22 +52,3 @@ def get_min_length(x, y , w):
 
     values = [math.ceil(area_sum / w)] + y
     return max(values)
-
-def z3_max(vector):
-    maximum = vector[0]
-    for value in vector[1:]:
-        maximum = If(value > maximum, value, maximum)
-
-    return maximum
-
-
-def z3_cumulative(start, duration, resources, total):
-    decomposition = []
-    for resource in resources:
-        decomposition.append(
-            sum([If(And(start[i] <= resource, resource < start[i] + duration[i]), resources[i], 0)
-                 for i in range(len(start))]) <= total
-        )
-    return decomposition
-
-

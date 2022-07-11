@@ -1,14 +1,13 @@
 import argparse
+import os
+
 
 # https://stackoverflow.com/questions/9816816/get-absolute-paths-of-all-files-in-a-directory
-import os
-import subprocess
-
-
 def absoluteFilePaths(directory):
     for dir_path, _, filenames in os.walk(directory):
         for f in filenames:
             yield os.path.abspath(os.path.join(dir_path, f))
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -42,6 +41,7 @@ def main():
         print(f'Running model {model_name}')
 
         os.system(command)
+
 
 if __name__ == '__main__':
     main()

@@ -1,12 +1,13 @@
 import argparse
+import os
+import random
 from itertools import cycle
 from os.path import exists
-import os
-import model_basic, model_rotation
-import utils
-import plotly.graph_objects as go
-import random
 import plotly.express as px
+import plotly.graph_objects as go
+import model_basic
+import model_rotation
+import utils
 
 palette = cycle(px.colors.qualitative.Plotly)
 
