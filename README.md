@@ -1,6 +1,22 @@
 # VLSI solver
 
-[This project](https://github.com/francescoolivo/VLSI) develops a solver for the [VLSI](https://en.wikipedia.org/wiki/Very_Large_Scale_Integration) problem using three different technologies:
+![](CP/out/rotation/plots/out-39.png =600x600)
+
+## Problem description
+
+VLSI (Very Large Scale Integration) refers to the trend of integrating circuits into silicon chips. A typical example is the smartphone.
+
+The modern trend of  shrinking transistor sizes, allowing engineers to fit more and more transistors into the same area of silicon, has pushed the integration of more and more functions of cellphone circuitry into a single silicon die (i.e. plate).
+
+This enabled  the modern cellphone to mature into a powerful tool that shrank from the size of  a large brick-sized unit to a device small enough to comfortably carry in a pocket  or purse, with a video camera, touchscreen, and other advanced features. 
+
+As the  combinatorial decision and optimization expert, the student is assigned to design  the VLSI of the circuits defining their electrical device: given a fixed-width plate and a list of rectangular circuits, decide how to place them on the plate so that the length of the final device is minimized (improving its portability). 
+
+Consider two variants of the problem. In the first, each circuit must be placed in a fixed orientation with respect to the others. This means that, an n × m circuit cannot be positioned as an m × n circuit in the silicon plate. In the second case, the rotation is allowed, which means that an n × m circuit can be positioned either as it is or as m × n.
+
+## Project
+
+We developed a solver for the [VLSI](https://en.wikipedia.org/wiki/Very_Large_Scale_Integration) problem using three different technologies:
 - Constraint Programming (CP)
 - Satisfiable Modulo Theory (SMT)
 - Linear Programming (LP)
