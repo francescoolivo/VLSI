@@ -6,7 +6,7 @@ This directory contains the python script to solve the VLSI problem using LP, in
 
 To install the required conda environment, please refer to the [repository readme](../../README.md)
 
-You also need to install CPLEX on your machine. Please refer to [this guide](https://github.com/IBMPredictiveAnalytics/Simple_Linear_Programming_with_CPLEX/blob/master/cplex_instruction.md).  
+You also need to install CPLEX on your machine. We used the academic license. Please refer to the [IBM guide](https://www.ibm.com/products/ilog-cplex-optimization-studio?mhsrc=ibmsearch_a&mhq=CPLEX).  
 
 ## Usage
 
