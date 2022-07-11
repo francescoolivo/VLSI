@@ -26,8 +26,6 @@ def main():
 
     args = parser.parse_args()
 
-    print(args)
-
     for file in sorted(absoluteFilePaths(args.model_dir)):
         if not file.endswith(".mzn"):
             continue
@@ -35,7 +33,6 @@ def main():
         timeout_string = f' --timeout {args.timeout} ' if args.timeout else ''
         save_plots_string = ' -p ' if args.plots else ''
         command = f'python3 run.py -i {args.input_dir} -o {args.output_dir} -m {file}{timeout_string}{save_plots_string}'
-        print(command)
         model_name = file.split(os.sep)[-1].split('.')[0]
 
         print(f'Running model {model_name}')

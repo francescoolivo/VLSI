@@ -22,8 +22,8 @@ array[1..n] of var int: x_r = [if r[i] then y[i] else x[i] endif | i in 1..n];
 array[1..n] of var int: y_r = [if r[i] then x[i] else y[i] endif | i in 1..n];
 
 var l_min..l_max: l;
-array [1..n] of var 0..w-min(x): p_x;
-array [1..n] of var 0..l_max-min(y): p_y;
+array [1..n] of var 0..w: p_x;
+array [1..n] of var 0..l_max): p_y;
 
 % constraints
 constraint diffn(p_x, p_y, x_r, y_r); % not-overlapping
