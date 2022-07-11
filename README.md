@@ -1,6 +1,6 @@
 # VLSI solver
 
-![](CP/out/rotation/plots/out-39.png =600x600)
+![image](CP/out/rotation/plots/out-39.png)
 
 ## Problem description
 
