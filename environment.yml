@@ -1,4 +1,4 @@
-name: VLSIf
+name: VLSI
 channels:
   - plotly
   - conda-forge
