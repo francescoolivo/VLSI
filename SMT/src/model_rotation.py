@@ -1,11 +1,7 @@
-from pysmt.typing import *
-from pysmt.shortcuts import *
 import numpy as np
 from itertools import combinations
 import time
-from utils import get_min_length
-from pysmt.solvers import *
-from pysmt.logics import *
+from utils import get_min_length, get_max_length
 from pysmt.shortcuts import *
 
 def smt_cumulative(start, duration, resources, total):
@@ -20,17 +16,18 @@ def smt_cumulative(start, duration, resources, total):
         )
     return decomposition
 
-def solve(instance, timeout=300):
 
+def solve(instance, timeout=300):
     w = instance['w']
     n = instance['n']
     x = instance['x']
     y = instance['y']
 
     l_min = get_min_length(x, y, w)
+    l_max = get_max_length(x, y, w)
 
     # index of the circuit with the highest value
-    index = np.argmax(np.asarray(y)*np.asarray(x))
+    index = np.argmax(np.asarray(y) * np.asarray(x))
 
     # definition of the variables
 
@@ -39,29 +36,27 @@ def solve(instance, timeout=300):
     p_x = [Symbol(f"p_x_{str(i + 1)}", INT) for i in range(n)]
     p_y = [Symbol(f"p_y_{str(i + 1)}", INT) for i in range(n)]
 
-    x_r = [ Ite(r[i], Int(y[i]), Int(x[i])) for i in range(n)]
-    y_r = [ Ite(r[i], Int(x[i]), Int(y[i])) for i in range(n)]
+    x_r = [Ite(r[i], Int(y[i]), Int(x[i])) for i in range(n)]
+    y_r = [Ite(r[i], Int(x[i]), Int(y[i])) for i in range(n)]
 
-    h = Symbol("h", INT)
+    l = Symbol("l", INT)
 
-    domain_x = []
-    domain_y = []
+    domain_x = [And(GE(p_x[i], Int(0)), LE(p_x[i], Int(w) - Min(x_r))) for i in range(n)]
+    domain_y = [And(GE(p_y[i], Int(0)), LE(p_y[i], Int(l_max) - Min(y_r))) for i in range(n)]
 
-    domain_x = [GE(p_x[i], Int(0)) for i in range(n)]
-    domain_y = [GE(p_y[i], Int(0)) for i in range(n)]
-
+    domain_l = And(GE(l, Int(l_min)), LE(l, Int(l_max)))
 
     main_constraint = []
     for i in range(n):
-        main_constraint.append(LE(p_x[i]+x_r[i] , Int(w)))
-        main_constraint.append(LE(p_y[i]+y_r[i], h))
+        main_constraint.append(LE(p_x[i] + x_r[i], Int(w)))
+        main_constraint.append(LE(p_y[i] + y_r[i], l))
 
     symmetry_rotation = []
     for i in range(n):
-        if(x[i]==y[i]):
-            symmetry_rotation.append(Iff(r[i],FALSE()))
-        if(y[i] > w):
-            symmetry_rotation.append(Iff(r[i],FALSE()))
+        if (x[i] == y[i]):
+            symmetry_rotation.append(Iff(r[i], FALSE()))
+        if (y[i] > w):
+            symmetry_rotation.append(Iff(r[i], FALSE()))
 
     # cumulative constraints
     # cumulative_y = smt_cumulative(p_y, y_r, x_r, w)
@@ -70,43 +65,43 @@ def solve(instance, timeout=300):
     # relationship avoiding overlapping
     overlapping = []
     for (i, j) in combinations(range(n), 2):
-        overlapping.append(Or(  LE(p_x[i] + x_r[i],p_x[j]),
-                                LE(p_x[j] + x_r[j] ,p_x[i]),
-                                LE(p_y[i] + y_r[i],p_y[j]),
-                                LE(p_y[j] + y_r[j] ,p_y[i]),
-                           ))
+        overlapping.append(Or(LE(p_x[i] + x_r[i], p_x[j]),
+                              LE(p_x[j] + x_r[j], p_x[i]),
+                              LE(p_y[i] + y_r[i], p_y[j]),
+                              LE(p_y[j] + y_r[j], p_y[i]),
+                              ))
 
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
     symmetry = [And(Equals(p_x[index], Int(0))), Equals(p_y[index], Int(0))]
 
-    full_bottom = Equals( Plus(*[Ite(Equals(p_y[i], Int(0)), x_r[i], Int(0)) for i in range(n)]), Int(w) )
+    full_bottom = Equals(Plus(*[Ite(Equals(p_y[i], Int(0)), x_r[i], Int(0)) for i in range(n)]), Int(w))
 
     k = l_min
 
     # setting the optimizer
-    formula = And(Equals(h, Int(k)), *domain_x, *domain_y, *main_constraint,
-                     *overlapping, *symmetry_rotation, *symmetry, full_bottom)
+    formula = And(Equals(l, Int(k)), *domain_x, *domain_y, domain_l, *main_constraint,
+                  *overlapping, *symmetry_rotation, *symmetry, full_bottom)
 
     start_time = time.time()
 
-    #{z3->timeout - cvc4->tlimit} solver_options={"timeout": 300*1000}
-    with Solver(name="z3",solver_options={"timeout": timeout * 1000, "auto_config": True}) as solver:
+    # cvc4 -> Solver(name="cvc4", solver_options={"tlimit": 300*1000})
+    with Solver(name="z3", solver_options={"timeout": timeout * 1000, "auto_config": True}) as solver:
         solver.add_assertion(formula)
         try:
             while not solver.is_sat(formula):
-                    k = k + 1
-                    formula = And(Equals(h, Int(k)), *domain_x, *domain_y, *main_constraint,
-                                    *overlapping, *symmetry_rotation, *symmetry, full_bottom)
-                    solver.reset_assertions()
-                    solver.add_assertion(formula)
+                k = k + 1
+                formula = And(Equals(l, Int(k)), *domain_x, *domain_y, domain_l, *main_constraint,
+                              *overlapping, *symmetry_rotation, *symmetry, full_bottom)
+                solver.reset_assertions()
+                solver.add_assertion(formula)
 
             model = solver.get_model()
-            h = model.get_value(h).constant_value()
+            l = model.get_value(l).constant_value()
         except:
             elapsed_time = time.time() - start_time
             print("errore")
-            solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': [], 'p_y': [],
-                     'time': elapsed_time, 'found': False}
+            solution = {'w': w, 'n': n, 'length': l, 'x': x, 'y': y, 'p_x': [], 'p_y': [],
+                        'time': elapsed_time, 'found': False}
             return solution
 
     elapsed_time = time.time() - start_time
@@ -119,6 +114,6 @@ def solve(instance, timeout=300):
         if model.get_value(r[i]).constant_value():
             x[i], y[i] = y[i], x[i]
 
-    solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
-                     'time': elapsed_time, 'found': True}
+    solution = {'w': w, 'n': n, 'length': l, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
+                'time': elapsed_time, 'found': True}
     return solution

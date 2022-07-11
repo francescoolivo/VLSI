@@ -1,11 +1,13 @@
 import argparse
+import random
 from itertools import cycle
 from os.path import exists
-import model_basic, model_rotation
-import utils
-import plotly.graph_objects as go
-import random
+import os
 import plotly.express as px
+import plotly.graph_objects as go
+import model_basic
+import model_rotation
+import utils
 
 
 def plot_solution(w, h, n, xs, ys, widths, heights, name, filename):
@@ -112,7 +114,7 @@ def main():
                                   name,
                                   plot_name)
                 utils.write_file(os.path.join(output_dir, out_name + ".txt"), solution)
-                print(f"Solution found in time {solution['time']}")
+                print(f"Solution found in time {solution['time']:.3f}")
             else:
                 print("Solution not found in time")
 

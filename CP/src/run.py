@@ -109,6 +109,7 @@ def main():
         while result.split(os.linesep)[0].startswith('%') or result.split(os.linesep)[0].startswith('WARNING'):
             if "solveTime" in result.split(os.linesep)[0]:
                 time = float(result.split(os.linesep)[0].split("=")[-1])
+                print(f"Solution found in time {time:.3f}")
             result = os.linesep.join(result.split(os.linesep)[1:])
 
         if result.split(os.linesep)[0] == "=====UNKNOWN=====":

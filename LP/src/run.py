@@ -111,7 +111,8 @@ def main():
                                   name,
                                   plot_name)
                 utils.write_file(os.path.join(output_dir, out_name + ".txt"), solution)
-                print(f"Solution found in time {solution['time']}")
+                print(f"Solution found in time {solution['time']:.3f}")
+
             else:
                 print("Solution not found in time")
 

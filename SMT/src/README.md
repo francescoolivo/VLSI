@@ -6,7 +6,11 @@ This directory contains the python script to solve the VLSI problem using SMT, i
 
 To install the required conda environment, please refer to the [repository readme](../../README.md)
 
-You also need to install Minizinc on your machine. Please refer to [this guide](https://www.minizinc.org/doc-2.5.5/en/installation_detailed_linux.html) if you use Unix or macOS, or to [this guide](https://www.minizinc.org/doc-2.5.5/en/installation_detailed_windows.html) if your machine runs on Windows.  
+You also need to install the Z3 solver: once you installed the conda environment you simply need to run:
+
+```shell
+pysmt-install --z3
+```
 
 ## Usage
 

@@ -1,8 +1,8 @@
+from pysmt.shortcuts import *
 import numpy as np
 from itertools import combinations
 import time
 from utils import get_min_length, get_max_length
-from pysmt.shortcuts import *
 
 
 def smt_cumulative(start, duration, resources, total):
@@ -36,15 +36,17 @@ def solve(instance, timeout=300):
     p_x = [Symbol(f"p_x_{str(i + 1)}", INT) for i in range(n)]
     p_y = [Symbol(f"p_y_{str(i + 1)}", INT) for i in range(n)]
 
-    h = Symbol("h", INT)
+    l = Symbol("l", INT)
 
-    domain_x = [GE(p_x[i], Int(0)) for i in range(n)]
-    domain_y = [GE(p_y[i], Int(0)) for i in range(n)]
+    domain_x = [And(GE(p_x[i], Int(0)), LE(p_x[i], Int(w) - Int(min(x)))) for i in range(n)]
+    domain_y = [And(GE(p_y[i], Int(0)), LE(p_y[i], Int(l_max) - Int(min(y)))) for i in range(n)]
+
+    domain_l = And(GE(l, Int(l_min)), LE(l, Int(l_max)))
 
     main_constraint = []
     for i in range(n):
         main_constraint.append(LE(p_x[i] + x[i], Int(w)))
-        main_constraint.append(LE(p_y[i] + y[i], h))
+        main_constraint.append(LE(p_y[i] + y[i], l))
 
     # cumulative constraints
     cumulative_y = smt_cumulative(p_y, y, x, w)
@@ -59,6 +61,7 @@ def solve(instance, timeout=300):
                               LE(p_y[j] + y[j], p_y[i]),
                               ))
 
+    # full_bottom constraint
     full_bottom = Equals(Plus(*[Ite(Equals(p_y[i], Int(0)), Int(x[i]), Int(0)) for i in range(n)]), Int(w))
 
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
@@ -66,27 +69,27 @@ def solve(instance, timeout=300):
 
     k = l_min
     # setting the optimizer
-    formula = And(Equals(h, Int(k)), *symmetry, *domain_x, *domain_y, *main_constraint,
+    formula = And(Equals(l, Int(k)), *symmetry, *domain_x, *domain_y, domain_l, *main_constraint,
                   *overlapping, *cumulative_x, *cumulative_y, full_bottom)
 
     start_time = time.time()
 
-    # {z3->timeout - cvc4->tlimit} solver_options={"timeout": 300*1000}
+    # cvc4 -> Solver(name="cvc4", solver_options={"tlimit": 300*1000})
     with Solver(name="z3", solver_options={"timeout": timeout * 1000, "auto_config": True}) as solver:
         solver.add_assertion(formula)
         try:
             while not solver.is_sat(formula):
                 k = k + 1
-                formula = And(Equals(h, Int(k)), *symmetry, *domain_x, *domain_y, *main_constraint,
+                formula = And(Equals(l, Int(k)), *symmetry, *domain_x, *domain_y, domain_l, *main_constraint,
                               *overlapping, *cumulative_x, *cumulative_y, full_bottom)
                 solver.reset_assertions()
                 solver.add_assertion(formula)
 
             model = solver.get_model()
-            h = model.get_value(h).constant_value()
+            l = model.get_value(l).constant_value()
         except:
             elapsed_time = time.time() - start_time
-            solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': [], 'p_y': [],
+            solution = {'w': w, 'n': n, 'length': l, 'x': x, 'y': y, 'p_x': [], 'p_y': [],
                         'time': elapsed_time, 'found': False}
             return solution
 
@@ -98,6 +101,6 @@ def solve(instance, timeout=300):
         p_x_sol.append(model.get_value(p_x[i]).constant_value())
         p_y_sol.append(model.get_value(p_y[i]).constant_value())
 
-    solution = {'w': w, 'n': n, 'length': h, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
+    solution = {'w': w, 'n': n, 'length': l, 'x': x, 'y': y, 'p_x': p_x_sol, 'p_y': p_y_sol,
                 'time': elapsed_time, 'found': True}
     return solution
